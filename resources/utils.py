@@ -8,8 +8,14 @@ import rawpy
 
 
 def load_raw(file_path):
+    '''
+    R G1 R G1
+    G2 B G B2
+    R G1 R G1
+    G2 B G2 B
+    '''
     with rawpy.imread(file_path) as raw:
-        raw_image = raw.raw_image_visible
+        raw_image = raw.raw_image_visible # rawpy
 
     height, width = raw_image.shape
     r = raw_image[0:height:2, 0:width:2]
@@ -25,6 +31,9 @@ def load_raw(file_path):
 def convert_image(
     model, img_rgb, sample_size=(64, 64), context_size=(128, 128), gammas=[1], batch_size=64
 ):
+    '''
+    用模型把 RGB 图像块批量转为 RGGB 格式（通常是反ISP任务）
+    '''
     model.eval()
     img_rgb_h, img_rgb_w = img_rgb.shape[:2]
     img_rggb_h, img_rggb_w = img_rgb_h // 2, img_rgb_w // 2
@@ -37,7 +46,7 @@ def convert_image(
     samples = []
     global_imgs = []
 
-    # image needs to be extended by 1 pixel since the reverseISP model takes in a 66x66 patch and outpus a 32x32 patch
+    # image needs to be extended by 1 pixel since the reverseISP model takes in a 66x66 patch and outpus a 32x32 patch 图像扩展 (H+2, W+2, 3)
     img_rgb_extended = cv2.copyMakeBorder(img_rgb, 1, 1, 1, 1, cv2.BORDER_REFLECT)
 
     # the model is convolved over the image
